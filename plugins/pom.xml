@@ -42,6 +42,7 @@
         <module>logback</module>
         <module>dubbo</module>
         <module>hystrix</module>
+        <module>cassandra</module>
     </modules>
 
     <dependencies>
@@ -98,6 +99,11 @@
         <dependency>
             <groupId>com.navercorp.pinpoint</groupId>
             <artifactId>pinpoint-commons-dbcp-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.navercorp.pinpoint</groupId>
+            <artifactId>pinpoint-cassandra-driver-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
