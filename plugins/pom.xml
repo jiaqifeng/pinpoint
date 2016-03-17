@@ -43,6 +43,7 @@
         <module>dubbo</module>
         <module>hystrix</module>
         <module>cassandra</module>
+        <module>cassandra-1.0</module>
     </modules>
 
     <dependencies>
@@ -104,6 +105,11 @@
         <dependency>
             <groupId>com.navercorp.pinpoint</groupId>
             <artifactId>pinpoint-cassandra-driver-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.navercorp.pinpoint</groupId>
+            <artifactId>pinpoint-cassandra-driver-1.0-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
