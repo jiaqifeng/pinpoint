@@ -42,8 +42,7 @@
         <module>logback</module>
         <module>dubbo</module>
         <module>hystrix</module>
-        <module>cassandra</module>
-        <module>cassandra-1.0</module>
+        <module>${cassandra.driver.module}</module>
     </modules>
 
     <dependencies>
@@ -104,12 +103,7 @@
         </dependency>
         <dependency>
             <groupId>com.navercorp.pinpoint</groupId>
-            <artifactId>pinpoint-cassandra-driver-plugin</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.navercorp.pinpoint</groupId>
-            <artifactId>pinpoint-cassandra-driver-1.0-plugin</artifactId>
+            <artifactId>pinpoint-cassandra-driver${cassandra.driver.plugin.sufix}-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

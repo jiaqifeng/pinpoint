@@ -75,7 +75,6 @@
         <cloverLicenseLocation>${basedir}/clover.license</cloverLicenseLocation>
         <spring-batch-version>2.2.7.RELEASE</spring-batch-version>
         <docker.maven.plugin.version>0.3.8</docker.maven.plugin.version>
-        <cassandra.driver.version>2.1.7.1</cassandra.driver.version>
     </properties>
 
     <dependencies>
@@ -930,6 +929,25 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>cassandra-1.0</id>
+            <properties>
+                <cassandra.driver.version>1.0.5</cassandra.driver.version>
+                <cassandra.driver.module>cassandra-1.0</cassandra.driver.module>
+                <cassandra.driver.plugin.sufix>-1.0</cassandra.driver.plugin.sufix>
+            </properties>
+        </profile>
+        <profile>
+            <id>cassandra-default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <cassandra.driver.version>2.1.7.1</cassandra.driver.version>
+                <cassandra.driver.module>cassandra</cassandra.driver.module>
+                <cassandra.driver.plugin.sufix></cassandra.driver.plugin.sufix>
+            </properties>
         </profile>
     </profiles>
 </project>
