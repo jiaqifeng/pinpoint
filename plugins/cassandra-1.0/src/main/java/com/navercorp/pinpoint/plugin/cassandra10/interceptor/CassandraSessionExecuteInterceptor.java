@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Statement;
 import com.navercorp.pinpoint.bootstrap.context.DatabaseInfo;
 import com.navercorp.pinpoint.bootstrap.context.MethodDescriptor;
@@ -94,11 +95,14 @@ public class CassandraSessionExecuteInterceptor implements AroundInterceptor {
             String sql;
             if (args[0] instanceof BoundStatement) {
                 sql = ((BoundStatement) args[0]).preparedStatement().getQueryString();
+                //debug: logger.error("fengjiaqi: args[0] is BoundStatement, sql="+sql);
             } else if (args[0] instanceof Statement) {
                 sql = ((Statement) args[0]).getQueryString();
+                //debug: logger.error("fengjiaqi: args[0] is Statement, sql="+sql);
             } else {
                 // we have string TODO I hope so!
                 sql = (String) args[0];
+                //debug: logger.error("fengjiaqi: args[0] is String, sql="+sql);
             }
 
             ParsingResult parsingResult = traceContext.parseSql(sql);
@@ -110,13 +114,29 @@ public class CassandraSessionExecuteInterceptor implements AroundInterceptor {
                 }
             }
 
-            Map<Integer, String> bindValue = ((BindValueAccessor) target)._$PINPOINT$_getBindValue();
+            Map<Integer, String> bindValue=null;
+            if (args != null) {
+                //debug: logger.error("fengjiaqi: args!=null, type="+args.getClass().getName());
+                if (args instanceof Object[]) {
+                    //debug: logger.error("fengjiaqi: args is Object[]");
+                    if (args[0] != null) {
+                        //debug: logger.error("fengjiaqi: args[0] type="+args[0].getClass().getName());
+                    }
+                }
+            }
+            if (args !=null && args[0] != null && args[0] instanceof BoundStatement) {
+                PreparedStatement preparedStatement=((BoundStatement)args[0]).preparedStatement();
+                bindValue = ((BindValueAccessor) preparedStatement)._$PINPOINT$_getBindValue();
+            }
             // TODO Add bind variable interceptors to BoundStatement's setter methods and bind method and pass it down
             // Extracting bind variables from already-serialized is too risky
             if (bindValue != null && !bindValue.isEmpty()) {
+                //debug: logger.error("fengjiaqi: bindValue not null, length="+bindValue.size());
                 String bindString = toBindVariable(bindValue);
+                //debug: logger.error("fengjiaqi: bindString ="+bindString);
                 recorder.recordSqlParsingResult(parsingResult, bindString);
             } else {
+                //debug: logger.error("fengjiaqi: bindString not exist");
                 recorder.recordSqlParsingResult(parsingResult);
             }
 

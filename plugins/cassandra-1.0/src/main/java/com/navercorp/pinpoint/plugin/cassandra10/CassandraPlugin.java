@@ -25,6 +25,8 @@ import com.navercorp.pinpoint.bootstrap.instrument.transformer.TransformCallback
 import com.navercorp.pinpoint.bootstrap.instrument.transformer.TransformTemplate;
 import com.navercorp.pinpoint.bootstrap.instrument.transformer.TransformTemplateAware;
 import com.navercorp.pinpoint.bootstrap.interceptor.scope.ExecutionPolicy;
+import com.navercorp.pinpoint.bootstrap.logging.PLogger;
+import com.navercorp.pinpoint.bootstrap.logging.PLoggerFactory;
 import com.navercorp.pinpoint.bootstrap.plugin.ProfilerPlugin;
 import com.navercorp.pinpoint.bootstrap.plugin.ProfilerPluginSetupContext;
 
@@ -46,6 +48,7 @@ public class CassandraPlugin implements ProfilerPlugin, TransformTemplateAware {
             addDefaultPreparedStatementTransformer();
             addSessionTransformer(config);
             addClusterTransformer();
+            addBoundStatementBindTransformer();
         }
     }
 
@@ -131,6 +134,28 @@ public class CassandraPlugin implements ProfilerPlugin, TransformTemplateAware {
 
                 target.addScopedInterceptor(
                         "com.navercorp.pinpoint.plugin.cassandra10.interceptor.CassandraSessionShutdownInterceptor",
+                        CassandraConstants.CASSANDRA_SCOPE);
+
+                return target.toBytecode();
+            }
+        });
+    }
+
+    private void addBoundStatementBindTransformer() {
+        transformTemplate.transform("com.datastax.driver.core.BoundStatement", new TransformCallback() {
+
+            @Override
+            public byte[] doInTransform(Instrumentor instrumentor, ClassLoader loader, String className,
+                                        Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer)
+                    throws InstrumentException {
+                InstrumentClass target = instrumentor.getInstrumentClass(loader, className, classfileBuffer);
+
+                if (!target.isInterceptable()) {
+                    return null;
+                }
+
+                target.addScopedInterceptor(
+                        "com.navercorp.pinpoint.plugin.cassandra10.interceptor.CassandraBoundStatementBindInterceptor",
                         CassandraConstants.CASSANDRA_SCOPE);
 
                 return target.toBytecode();
