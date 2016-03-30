@@ -25,13 +25,13 @@ public class RabbitMQConsumeInterceptor extends SpanSimpleAroundInterceptor {
         AMQP.BasicProperties properties = (AMQP.BasicProperties) args[2];
         Map<String, Object> headers = properties.getHeaders();
         // If this transaction is not traceable, mark as disabled.
-        if (headers.get(RabbitMQConstants.META_DO_NOT_TRACE) != null) {
+        if (headers.get(RabbitMQConstants.META_DO_NOT_TRACE) != null) {logger.error("fengjiaqi RabbitMQConsumeInterceptor: createTrace: disableSampling");
             return traceContext.disableSampling();
         }
 
         Object transactionId = headers.get(RabbitMQConstants.META_TRANSACTION_ID);
         // If there's no trasanction id, a new trasaction begins here.
-        if (transactionId == null) {
+        if (transactionId == null) {logger.error("fengjiaqi RabbitMQConsumeInterceptor: createTrace: transactionId = null");
             return traceContext.newTraceObject();
         }
 
@@ -40,7 +40,7 @@ public class RabbitMQConsumeInterceptor extends SpanSimpleAroundInterceptor {
         long spanID = NumberUtils.parseLong(headers.get(RabbitMQConstants.META_SPAN_ID).toString(), SpanId.NULL);
         short flags = NumberUtils.parseShort(headers.get(RabbitMQConstants.META_FLAGS).toString(), (short) 0);
         TraceId traceId = traceContext.createTraceId(transactionId.toString(), parentSpanID, spanID, flags);
-
+        logger.error("fengjiaqi RabbitMQConsumeInterceptor: createTrace: parentSpan="+parentSpanID+", spanId="+spanID+",traceId="+traceId);
         return traceContext.continueTraceObject(traceId);
     }
 
@@ -51,12 +51,14 @@ public class RabbitMQConsumeInterceptor extends SpanSimpleAroundInterceptor {
 
         // You have to record a service type within Server range.
         recorder.recordServiceType(RabbitMQConstants.RABBITMQ_SERVICE_TYPE);
-
+        String exchange=envelope.getExchange();
+        if (exchange == null || exchange.equals("")) exchange = "unknown";
         // Record client address, server address.
-        recorder.recordEndPoint(envelope.getExchange());
+        recorder.recordEndPoint(exchange);
 
-        recorder.recordParentApplication(envelope.getExchange(), RabbitMQConstants.RABBITMQ_SERVICE_TYPE.getCode());
-        recorder.recordAcceptorHost(envelope.getExchange());
+        recorder.recordParentApplication(exchange, RabbitMQConstants.RABBITMQ_SERVICE_TYPE.getCode());
+        recorder.recordAcceptorHost(exchange);
+        logger.error("fengjiaqi RabbitMQConsumeInterceptor: doInBefore endPoint="+envelope.getExchange()+",="+exchange);
     }
 
     @Override
@@ -67,13 +69,20 @@ public class RabbitMQConsumeInterceptor extends SpanSimpleAroundInterceptor {
         AMQP.BasicProperties properties = (AMQP.BasicProperties) args[2];
         byte[] body = (byte[]) args[3];
 
+        String exchange=envelope.getExchange();
+        if (exchange == null || exchange.equals("")) exchange = "unknown";
+
         recorder.recordApi(methodDescriptor);
-        recorder.recordAttribute(RabbitMQConstants.RABBITMQ_EXCHANGE_ANNOTATION_KEY, envelope.getExchange());
+        recorder.recordAttribute(RabbitMQConstants.RABBITMQ_EXCHANGE_ANNOTATION_KEY, exchange);
         recorder.recordAttribute(RabbitMQConstants.RABBITMQ_ROUTINGKEY_ANNOTATION_KEY, envelope.getRoutingKey());
         recorder.recordAttribute(RabbitMQConstants.RABBITMQ_PROPERTIES_ANNOTATION_KEY, properties);
         recorder.recordAttribute(RabbitMQConstants.RABBITMQ_BODY_ANNOTATION_KEY, body);
         recorder.recordRemoteAddress(connection.getAddress().getHostAddress() + ":" + connection.getPort());
-
+        logger.error("fengjiaqi RabbitMQConsumeInterceptor: routeKey="+envelope.getRoutingKey());
+        logger.error("fengjiaqi RabbitMQConsumeInterceptor: body="+(new String(body)));
+        logger.error("fengjiaqi RabbitMQConsumeInterceptor: host="+connection.getAddress().getHostAddress());
+        logger.error("fengjiaqi RabbitMQConsumeInterceptor: port="+connection.getPort());
+        logger.error("fengjiaqi RabbitMQConsumeInterceptor: exchange="+envelope.getExchange()+",="+exchange);
         if (throwable != null) {
             recorder.recordException(throwable);
         }

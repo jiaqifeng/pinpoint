@@ -25,7 +25,7 @@ public class RabbitMQPlugin implements ProfilerPlugin, TransformTemplateAware {
     @Override
     public void setup(ProfilerPluginSetupContext context) {
         this.addPublisher();
-//        this.addConsumer();
+        this.addConsumer();
     }
 
     private void addPublisher() {
@@ -35,9 +35,9 @@ public class RabbitMQPlugin implements ProfilerPlugin, TransformTemplateAware {
                 InstrumentClass target = instrumentor.getInstrumentClass(loader, className, classfileBuffer);
 
                 final InstrumentMethod method = target.getDeclaredMethod("basicPublish", "java.lang.String", "java.lang.String", "boolean", "boolean", "com.rabbitmq.client.AMQP$BasicProperties", "byte[]");
-                if (method != null) {
+                if (method != null) {System.out.println("fengjiaqi: could find basicPublish");
                     method.addInterceptor(PUBLISHER_INTERCEPTOR_FQCN);
-                }
+                } else {System.out.println("fengjiaqi: could not find basicPublish");}
 
                 return target.toBytecode();
             }
@@ -48,9 +48,9 @@ public class RabbitMQPlugin implements ProfilerPlugin, TransformTemplateAware {
                 InstrumentClass target = instrumentor.getInstrumentClass(loader, className, classfileBuffer);
 
                 final InstrumentMethod method = target.getDeclaredMethod("basicPublish", "java.lang.String", "java.lang.String", "boolean", "boolean", "com.rabbitmq.client.AMQP$BasicProperties", "byte[]");
-                if (method != null) {
+                if (method != null) {System.out.println("fengjiaqi: could find basicPublish ChannelN");
                     method.addInterceptor(PUBLISHER_INTERCEPTOR_FQCN);
-                }
+                } else {System.out.println("fengjiaqi: could not find basicPublish ChannelN");}
 
                 return target.toBytecode();
             }
