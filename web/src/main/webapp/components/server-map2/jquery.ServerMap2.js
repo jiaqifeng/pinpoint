@@ -74,6 +74,8 @@
                     'DUBBO_CONSUMER_GROUP': 'DUBBO.png',
                     'DUBBO_PROVIDER': 'DUBBO.png',
                     'DUBBO_PROVIDER_GROUP': 'DUBBO.png',
+                    'RABBITMQ': 'RABBITMQ.png',
+                    'RABBITMQ_GROUP': 'RABBITMQ.png',
                     'JETTY': 'JETTY.png',
                     'JETTY_GROUP': 'JETTY.png',
                     'UNDEFINED': 'UNDEFINED.png',

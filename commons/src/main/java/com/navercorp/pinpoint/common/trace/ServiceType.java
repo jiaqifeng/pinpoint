@@ -113,6 +113,7 @@ import static com.navercorp.pinpoint.common.trace.ServiceTypeProperty.*;
  * <tr><td>8200</td><td>REDIS</td></tr>
  * <tr><td>8250</td><td><i>RESERVED</i></td></tr>
  * <tr><td>8251</td><td><i>RESERVED</i></td></tr>
+ * <tr><td>8300</td><td>RABBITMQ</td></tr>
  * </table>
  * <h3>Cache Library Sandbox (8900 ~ 8999) Histogram type: Fast </h3>
  * 
