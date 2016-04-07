@@ -44,6 +44,7 @@
         <module>cassandra</module>
         <module>hystrix</module>
         <module>rabbitmq</module>
+        <module>kafka</module>
     </modules>
 
     <dependencies>
@@ -208,6 +209,13 @@
             <artifactId>pinpoint-rabbitmq-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.navercorp.pinpoint</groupId>
+            <artifactId>pinpoint-kafka-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>

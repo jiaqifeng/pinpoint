@@ -76,6 +76,8 @@
                     'DUBBO_PROVIDER_GROUP': 'DUBBO.png',
                     'RABBITMQ': 'RABBITMQ.png',
                     'RABBITMQ_GROUP': 'RABBITMQ.png',
+                    'KAFKA': 'KAFKA.png',
+                    'KAFKA_GROUP': 'KAFKA.png',
                     'JETTY': 'JETTY.png',
                     'JETTY_GROUP': 'JETTY.png',
                     'UNDEFINED': 'UNDEFINED.png',

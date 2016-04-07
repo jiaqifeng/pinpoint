@@ -19,19 +19,22 @@ import com.navercorp.pinpoint.common.trace.AnnotationKeyFactory;
 import com.navercorp.pinpoint.common.trace.ServiceType;
 import com.navercorp.pinpoint.common.trace.ServiceTypeFactory;
 
+import static com.navercorp.pinpoint.common.trace.ServiceTypeProperty.RECORD_STATISTICS;
+import static com.navercorp.pinpoint.common.trace.ServiceTypeProperty.TERMINAL;
+
 /**
  * @author Jiaqi Feng
  *
  */
 public interface KafkaPluginConstants {
-    public static final ServiceType KAFKA_SERVICE_TYPE = ServiceTypeFactory.of(9120+3, "KAFKA_COMMAND");
+    public static final ServiceType KAFKA_SERVICE_TYPE = ServiceTypeFactory.of(8350, "KAFKA", TERMINAL, RECORD_STATISTICS);
 
-    public static final String META_DO_NOT_TRACE = "_Kafka_DO_NOT_TRACE";
-    public static final String META_TRANSACTION_ID = "_Kafka_TRASACTION_ID";
-    public static final String META_SPAN_ID = "_Kafka_SPAN_ID";
-    public static final String META_PARENT_SPAN_ID = "_Kafka_PARENT_SPAN_ID";
-    public static final String META_PARENT_APPLICATION_NAME = "_Kafka_PARENT_APPLICATION_NAME";
-    public static final String META_PARENT_APPLICATION_TYPE = "_Kafka_PARENT_APPLICATION_TYPE";
-    public static final String META_FLAGS = "_Kafka_FLAGS";
+    public static final String META_DO_NOT_TRACE = "_KAFKA_DO_NOT_TRACE";
+    public static final String META_TRANSACTION_ID = "_KAFKA_TRASACTION_ID";
+    public static final String META_SPAN_ID = "_KAFKA_SPAN_ID";
+    public static final String META_PARENT_SPAN_ID = "_KAFKA_PARENT_SPAN_ID";
+    public static final String META_PARENT_APPLICATION_NAME = "_KAFKA_PARENT_APPLICATION_NAME";
+    public static final String META_PARENT_APPLICATION_TYPE = "_KAFKA_PARENT_APPLICATION_TYPE";
+    public static final String META_FLAGS = "_KAFKA_FLAGS";
 
 }
