@@ -36,10 +36,10 @@ public final class DefaultTrace implements Trace {
     private static final boolean isTrace = logger.isTraceEnabled();
     private static final boolean isWarn = logger.isWarnEnabled();
 
-    private final boolean sampling;
+    private boolean sampling;
 
-    private final long id;
-    private final TraceId traceId;
+    private long id;
+    private TraceId traceId;
 
     private final CallStack callStack;
 
@@ -88,6 +88,21 @@ public final class DefaultTrace implements Trace {
         this.spanEventRecorder = new WrappedSpanEventRecorder(traceContext);
         this.callStack = createCallStack(traceContext.getProfilerConfig(), span);
         setCurrentThread();
+    }
+
+    @Override
+    public void updateAsContinueTraceObject(TraceId continueTraceId, long transactionId, boolean sampling) {
+        logger.error("updateAsContinueTraceObject(): enter() ---------------------------");
+        if (continueTraceId == null) {
+            throw new NullPointerException("continueTraceId must not be null");
+        }
+        this.traceId = continueTraceId;
+        this.id = transactionId;
+        this.sampling = sampling;
+        logger.error("updateAsContinueTraceObject(): span="+spanRecorder.getSpan().toString());
+        spanRecorder.getSpan().setAgentId(continueTraceId.getAgentId());
+        spanRecorder.getSpan().setParentSpanId(continueTraceId.getParentSpanId());
+        logger.error("updateAsContinueTraceObject(): after span="+spanRecorder.getSpan().toString());
     }
 
     private CallStack createCallStack(ProfilerConfig profilerConfig, Span span) {

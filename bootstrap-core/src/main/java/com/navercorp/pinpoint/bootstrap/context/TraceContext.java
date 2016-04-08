@@ -36,6 +36,8 @@ public interface TraceContext {
 
     Trace continueTraceObject(TraceId traceId);
 
+    Trace updateAsContinueTraceObject(TraceId traceID);
+
     Trace continueTraceObject(Trace trace);
 
     Trace newTraceObject();

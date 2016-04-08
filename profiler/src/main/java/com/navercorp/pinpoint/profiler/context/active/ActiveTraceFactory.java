@@ -109,6 +109,12 @@ public class ActiveTraceFactory implements TraceFactory, TraceFactoryWrapper {
         return trace;
     }
 
+    @Override
+    public Trace updateAsContinueTraceObject(TraceId traceId) {
+        System.out.println("++++++++++++++++++++++++ CAN YOU SEE THIS +++++++++++++++++++++++++++++++}}}}}}}}}");
+        return delegate.updateAsContinueTraceObject(traceId);
+    }
+
     private void attachTrace(Trace trace) {
         if (trace == null) {
             return;

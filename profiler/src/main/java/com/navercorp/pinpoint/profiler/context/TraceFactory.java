@@ -42,4 +42,6 @@ public interface TraceFactory {
     Trace newTraceObject();
 
     Trace removeTraceObject();
+
+    Trace updateAsContinueTraceObject(TraceId traceId);
 }

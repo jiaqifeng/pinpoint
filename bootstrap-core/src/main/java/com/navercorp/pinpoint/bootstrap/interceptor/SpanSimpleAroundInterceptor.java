@@ -66,7 +66,7 @@ public abstract class SpanSimpleAroundInterceptor implements AroundInterceptor {
         }
     }
 
-    protected abstract void doInBeforeTrace(final SpanRecorder recorder, Object target, final Object[] args);
+    protected abstract void doInBeforeTrace(SpanRecorder recorder, Object target, Object[] args);
 
     protected abstract Trace createTrace(final Object target, final Object[] args);
 

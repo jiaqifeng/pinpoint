@@ -125,4 +125,9 @@ public class AsyncTrace implements Trace {
     public TraceScope addScope(String name) {
         return trace.addScope(name);
     }
+
+    @Override
+    public void updateAsContinueTraceObject(TraceId continueTraceId, long transactionId, boolean sampling) {
+        trace.updateAsContinueTraceObject(continueTraceId, transactionId, sampling);
+    }
 }

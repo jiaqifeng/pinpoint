@@ -61,6 +61,11 @@ public class MockTraceContext implements TraceContext {
     }
 
     @Override
+    public Trace updateAsContinueTraceObject(TraceId traceID) {
+        return null;
+    }
+
+    @Override
     public Trace newTraceObject() {
         return trace;
     }

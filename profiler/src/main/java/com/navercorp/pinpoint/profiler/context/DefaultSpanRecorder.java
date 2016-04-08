@@ -50,6 +50,7 @@ public class DefaultSpanRecorder extends AbstractRecorder implements SpanRecorde
     }
     
     public void recordTraceId(TraceId traceId) {
+        logger.error("DefaultSpanRecorder.recordTraceId(): ");
         span.recordTraceId(traceId);
     }
 

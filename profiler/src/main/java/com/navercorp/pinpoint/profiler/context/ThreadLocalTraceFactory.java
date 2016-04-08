@@ -126,7 +126,18 @@ public class ThreadLocalTraceFactory implements TraceFactory {
         bind(trace);
         return trace;
     }
-    
+
+    @Override
+    public Trace updateAsContinueTraceObject(final TraceId traceId) {
+        System.out.println("++++++++++++++++++++++++ CAN YOU SEE THIS +++++++++++++++++++++++++++++++!!!!!!!!!!!");
+        final Trace old = this.threadLocalBinder.get();
+        logger.error("updateAsContinueTraceObject(): traceId="+traceId+"................................");
+        if (old != null) {
+            logger.error("updateAsContinueTraceObject(): update old trace");
+            old.updateAsContinueTraceObject(traceId, this.idGenerator.nextContinuedTransactionId(), true);
+        }
+        return old;
+    }
 
     @Override
     public Trace continueTraceObject(Trace trace) {

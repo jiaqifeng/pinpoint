@@ -160,6 +160,12 @@ public class DefaultTraceContext implements TraceContext {
     }
 
     @Override
+    public Trace updateAsContinueTraceObject(TraceId traceID) {
+        System.out.println("++++++++++++++++++++++++ CAN YOU SEE THIS +++++++++++++++++++++++++++++++");
+        return traceFactory.updateAsContinueTraceObject(traceID);
+    }
+
+    @Override
     public Trace continueTraceObject(Trace trace) {
         return traceFactory.continueTraceObject(trace);
     }

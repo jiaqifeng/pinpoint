@@ -21,6 +21,8 @@ import com.navercorp.pinpoint.bootstrap.instrument.Instrumentor;
 import com.navercorp.pinpoint.bootstrap.instrument.transformer.TransformCallback;
 import com.navercorp.pinpoint.bootstrap.instrument.transformer.TransformTemplate;
 import com.navercorp.pinpoint.bootstrap.instrument.transformer.TransformTemplateAware;
+import com.navercorp.pinpoint.bootstrap.logging.PLogger;
+import com.navercorp.pinpoint.bootstrap.logging.PLoggerFactory;
 import com.navercorp.pinpoint.bootstrap.plugin.ProfilerPlugin;
 import com.navercorp.pinpoint.bootstrap.plugin.ProfilerPluginSetupContext;
 
@@ -34,6 +36,7 @@ import java.security.ProtectionDomain;
  * @author Jiaqi Feng
  */
 public class KafkaPlugin implements ProfilerPlugin, TransformTemplateAware {
+    private final PLogger logger = PLoggerFactory.getLogger(this.getClass());
     private TransformTemplate transformTemplate;
 
     @Override
@@ -49,10 +52,10 @@ public class KafkaPlugin implements ProfilerPlugin, TransformTemplateAware {
 
                 final InstrumentMethod method = target.getDeclaredMethod("toBytes", "java.lang.String");
                 if (method != null) {
-                    System.out.println("fengjiaqi: could find PinpointEncoder.toBytes");
+                    logger.error("fengjiaqi: could find PinpointEncoder.toBytes");
                     method.addInterceptor("com.navercorp.pinpoint.plugin.kafka.interceptor.KafkaValueEncoderInterceptor");
                 } else {
-                    System.out.println("fengjiaqi: could not find PinpointEncoder.toBytes");
+                    logger.error("fengjiaqi: could not find PinpointEncoder.toBytes");
                 }
 
                 if (target.hasField("header", "java.lang.String")) {
@@ -70,14 +73,31 @@ public class KafkaPlugin implements ProfilerPlugin, TransformTemplateAware {
 
                 final InstrumentMethod method = target.getDeclaredMethod("fromBytes", "byte[]");
                 if (method != null) {
-                    System.out.println("fengjiaqi: could find PinpointDecoder.toBytes");
+                    logger.error("fengjiaqi: could find PinpointDecoder.toBytes");
                     method.addInterceptor("com.navercorp.pinpoint.plugin.kafka.interceptor.KafkaValueDecoderInterceptor");
                 } else {
-                    System.out.println("fengjiaqi: could not find PinpointDecoder.toBytes");
+                    logger.error("fengjiaqi: could not find PinpointDecoder.toBytes");
                 }
 
                 if (target.hasField("header", "java.lang.String")) {
                     target.addGetter("com.navercorp.pinpoint.plugin.kafka.KafkaHeaderGetter", "header");
+                }
+
+                return target.toBytecode();
+            }
+        });
+        // temporary for test
+        transformTemplate.transform("com.jack.kafka.examples.PinpointConsumer", new TransformCallback() {
+            @Override
+            public byte[] doInTransform(Instrumentor instrumentor, ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws InstrumentException {
+                InstrumentClass target = instrumentor.getInstrumentClass(loader, className, classfileBuffer);
+
+                final InstrumentMethod method = target.getDeclaredMethod("handleOnce");
+                if (method != null) {
+                    logger.error("fengjiaqi: could find com.jack.kafka.examples.PinpointConsumer.run");
+                    method.addInterceptor("com.navercorp.pinpoint.plugin.kafka.interceptor.KafkaConsumerTopTraceInterceptor");
+                } else {
+                    logger.error("fengjiaqi: could not find com.jack.kafka.examples.PinpointConsumer.run");
                 }
 
                 return target.toBytecode();

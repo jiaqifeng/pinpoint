@@ -101,6 +101,12 @@ public class MetricTraceFactory implements TraceFactory, TraceFactoryWrapper {
         return trace;
     }
 
+    @Override
+    public Trace updateAsContinueTraceObject(TraceId traceId) {
+        System.out.println("++++++++++++++++++++++++ CAN YOU SEE THIS +++++++++++++++++++++++++++++++3333333333333");
+        return delegate.updateAsContinueTraceObject(traceId);
+    }
+
     public Metric getRpcMetric(ServiceType serviceType) {
         if (serviceType == null) {
             throw new NullPointerException("serviceType must not be null");

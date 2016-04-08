@@ -135,4 +135,9 @@ public class DisableTrace implements Trace {
     public TraceScope addScope(String name) {
         return scopePool.add(name);
     }
+
+    @Override
+    public void updateAsContinueTraceObject(TraceId continueTraceId, long transactionId, boolean sampling) {
+        return;
+    }
 }

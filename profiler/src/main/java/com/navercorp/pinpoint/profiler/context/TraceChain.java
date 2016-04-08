@@ -122,6 +122,11 @@ public class TraceChain implements TraceWrap {
     }
 
     @Override
+    public void updateAsContinueTraceObject(TraceId continueTraceId, long transactionId, boolean sampling) {
+        delegate.updateAsContinueTraceObject(continueTraceId, transactionId, sampling);
+    }
+
+    @Override
     public SpanEventRecorder traceBlockBegin() {
         return delegate.traceBlockBegin();
     }
