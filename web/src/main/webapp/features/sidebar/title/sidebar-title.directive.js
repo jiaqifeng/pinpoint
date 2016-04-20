@@ -7,8 +7,8 @@
 	 * @name sidebarTitleDirective
 	 * @class
 	 */
-	pinpointApp.directive("sidebarTitleDirective", [ "$timeout", "$rootScope", "PreferenceService",
-	    function ( $timeout, $rootScope, preferenceService ) {
+	pinpointApp.directive("sidebarTitleDirective", [ "$timeout", "$rootScope", "PreferenceService", "AnalyticsService",
+	    function ( $timeout, $rootScope, preferenceService, analyticsService ) {
 	        return {
 	            restrict: "E",
 	            replace: true,
@@ -42,7 +42,7 @@
 					}
 	
 	                function initialize( oSidebarTitleVoService, node ) {
-						scope.isWas = node.isWas;
+						scope.isWas = angular.isDefined( node ) ? ( angular.isDefined( node.isWas ) ? node.isWas : false ) : false;
 	                    scope.stImage = oSidebarTitleVoService.getImage();
 	                    scope.stImageShow = oSidebarTitleVoService.getImage() ? true : false;
 	                    scope.stTitle = oSidebarTitleVoService.getTitle();
@@ -66,6 +66,7 @@
 						scope.agentList = [];
 	                }
 					scope.changeAgent = function() {
+						analyticsService.send( analyticsService.CONST.INSPECTOR, analyticsService.CONST.CLK_CHANGE_AGENT_MAIN );
 						$rootScope.$broadcast("changedCurrentAgent", scope.currentAgent );
 					};
 	                /**

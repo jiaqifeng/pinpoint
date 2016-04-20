@@ -48,7 +48,6 @@
 	            replace: true,
 	            templateUrl: 'features/serverMap/serverMap.html?v=' + G_BUILD_TIME,
 	            link: function postLink(scope, element, attrs) {
-	
 	                // define private variables
 	                var bUseNodeContextMenu, bUseLinkContextMenu, htLastQuery,
 	                    bUseBackgroundContextMenu, oServerMap, oAlertService, oProgressBarService, htLastMapData, htLastLink, htLastNode,
@@ -104,7 +103,7 @@
 	                 */
 	                extractMergeTypeList = function( serverMapData ) {
 	                	serverMapData.nodeDataArray.forEach( function( o ) {
-	                		if ( o.isWas == false && o.serviceType !== "USER" ) {
+	                		if ( o.isWas === false && o.serviceType !== "USER" ) {
 	                			if ( angular.isUndefined( scope.mergeStatus[o.serviceType] ) ) {
 		                			scope.mergeTypeList.push( o.serviceType );
 		                			scope.mergeStatus[o.serviceType] = true;
@@ -340,7 +339,7 @@
 	                    	link.fromNode = ServerMapDaoService.getNodeDataByKey(htLastMapData.applicationMapData, link.from);
 	                    	link.toNode = ServerMapDaoService.getNodeDataByKey(htLastMapData.applicationMapData, link.to);
 	                    	options.fOnLinkClicked(e, link);
-	                    }
+	                    };
 	                    options.fOnNodeClicked = function (e, node, unknownKey, searchQuery) {
 	                        var originalNode;
 	                        if (angular.isDefined(node.unknownNodeGroup) && !unknownKey) {
@@ -354,7 +353,7 @@
 	                        sLastSelection = 'node';
 	                        htLastNode = node;
 	                        scope.$emit("serverMapDirective.nodeClicked", e, htLastQuery, node, htLastMergedMapData, searchQuery);
-							if ( scope.oNavbarVoService && scope.oNavbarVoService.getPeriodType() === "realtime" ) {
+							if ( scope.oNavbarVoService && scope.oNavbarVoService.isRealtime() ) {
 								$rootScope.$broadcast("realtimeChartController.initialize", node.isWas, node.applicationName, scope.oNavbarVoService.getApplication() + "/" + scope.oNavbarVoService.getReadablePeriod() + "/" + scope.oNavbarVoService.getQueryEndDateTime() + "/" + scope.oNavbarVoService.getCallerRange());
 							}
 	                        reset();
@@ -363,7 +362,7 @@
 	                    	e.diagram.zoomToRect( node.actualBounds, 1.2);
 	                    };
 	                    options.fOnNodeContextClicked = function (e, node) {
-							if ( scope.oNavbarVoService.getPeriodType() === "realtime" ) {
+							if ( scope.oNavbarVoService.isRealtime() ) {
 								return;
 							}
 	                        reset();
@@ -381,7 +380,7 @@
 //	                        scope.$emit("serverMapDirective.nodeContextClicked", e, query, node, applicationMapData);
 	                    };
 	                    options.fOnLinkClicked = function (e, link) {
-							if ( scope.oNavbarVoService.getPeriodType() === "realtime" ) {
+							if ( scope.oNavbarVoService.isRealtime() ) {
 								return;
 							}
 	                        var originalLink;
@@ -488,16 +487,16 @@
 	                 */
 	                openFilterWizard = function () {
 	                    reset();
-	                    var oSidebarTitleVoService = new SidebarTitleVoService;
+	                    var oSidebarTitleVoService = new SidebarTitleVoService();
 	
 	                    if (htLastLink.fromNode.serviceType === 'USER') {
 	                        oSidebarTitleVoService
 	                            .setImageType('USER')
-	                            .setTitle('USER')
+	                            .setTitle('USER');
 	                    } else {
 	                        oSidebarTitleVoService
 	                            .setImageType(htLastLink.fromNode.serviceType)
-	                            .setTitle(htLastLink.fromNode.applicationName)
+	                            .setTitle(htLastLink.fromNode.applicationName);
 	                    }
 	                    oSidebarTitleVoService
 	                        .setImageType2(htLastLink.toNode.serviceType)
@@ -586,7 +585,7 @@
 	
 	                    var oServerMapHintVoService = new ServerMapHintVoService();
 	                    if (htLastLink.sourceInfo.isWas && htLastLink.targetInfo.isWas) {
-	                        oServerMapHintVoService.setHint(htLastLink.toNode.applicationName, htLastLink.filterTargetRpcList)
+	                        oServerMapHintVoService.setHint(htLastLink.toNode.applicationName, htLastLink.filterTargetRpcList);
 	                    }
 	                    scope.$broadcast('serverMapDirective.openFilteredMap', oServerMapFilterVoService, oServerMapHintVoService);
 	                    reset();
@@ -665,7 +664,7 @@
 	
 	                    var oServerMapHintVoService = new ServerMapHintVoService();
 	                    if (htLastLink.sourceInfo.isWas && htLastLink.targetInfo.isWas) {
-	                        oServerMapHintVoService.setHint(htLastLink.toNode.applicationName, htLastLink.filterTargetRpcList)
+	                        oServerMapHintVoService.setHint(htLastLink.toNode.applicationName, htLastLink.filterTargetRpcList);
 	                    }
 	                    scope.$broadcast('serverMapDirective.openFilteredMap', oServerMapFilterVoService, oServerMapHintVoService);
 	                    reset();
@@ -794,13 +793,13 @@
 	                	if ( $event.keyCode == 13 ) {
 	                		scope.searchNode();
 	                	}                	
-	                }
+	                };
 	                scope.searchNodeWithCategory = function( index ) {
 	                	if (oServerMap) {
 	                		scope.searchNodeIndex = index;
 	                        oServerMap.searchNode( scope.searchNodeList[index].applicationName, scope.searchNodeList[index].serviceType );
 	                    }
-	                }
+	                };
 	                scope.searchNode = function() {
 	                	if (oServerMap && scope.searchNodeQuery !== "" ) {
 	                		analyticsService.send(analyticsService.CONST.MAIN, analyticsService.CONST.CLK_SEARCH_NODE);
@@ -816,7 +815,7 @@
 	                	scope.searchNodeQuery = "";
 	                	scope.searchNodeList = [];
 	                	jQuery(element).find(".search-result").hide();
-	                }
+	                };
 	                scope.toggleShowAntStyleHint = function() {
 	                	scope.showAntStyleHint = !scope.showAntStyleHint; 
 	                };

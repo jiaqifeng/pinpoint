@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.navercorp.pinpoint</groupId>
         <artifactId>pom</artifactId>
-        <version>1.5.2-SNAPSHOT</version>
+        <version>1.6.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>pinpoint-plugins</artifactId>
@@ -41,6 +41,7 @@
         <module>log4j</module>
         <module>logback</module>
         <module>dubbo</module>
+        <module>cassandra</module>
         <module>hystrix</module>
     </modules>
 
@@ -98,6 +99,11 @@
         <dependency>
             <groupId>com.navercorp.pinpoint</groupId>
             <artifactId>pinpoint-commons-dbcp-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.navercorp.pinpoint</groupId>
+            <artifactId>pinpoint-cassandra-driver-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

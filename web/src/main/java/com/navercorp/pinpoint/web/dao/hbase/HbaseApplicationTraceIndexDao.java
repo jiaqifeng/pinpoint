@@ -22,6 +22,7 @@ import com.navercorp.pinpoint.common.buffer.Buffer;
 import com.navercorp.pinpoint.common.hbase.HBaseTables;
 import com.navercorp.pinpoint.common.hbase.HbaseOperations2;
 import com.navercorp.pinpoint.common.hbase.LimitEventHandler;
+import com.navercorp.pinpoint.common.hbase.RowMapper;
 import com.navercorp.pinpoint.common.util.BytesUtils;
 import com.navercorp.pinpoint.common.util.DateUtils;
 import com.navercorp.pinpoint.common.util.SpanUtils;
@@ -54,7 +55,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.hadoop.hbase.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -244,28 +244,6 @@ public class HbaseApplicationTraceIndexDao implements ApplicationTraceIndexDao {
         return scan;
     }
 
-    @Override
-    public List<Dot> scanTraceScatter(String applicationName, Range range, final int limit, boolean scanBackward) {
-        if (applicationName == null) {
-            throw new NullPointerException("applicationName must not be null");
-        }
-        if (range == null) {
-            throw new NullPointerException("range must not be null");
-        }
-        if (limit < 0) {
-            throw new IllegalArgumentException("negative limit:" + limit);
-        }
-        logger.debug("scanTraceScatter");
-        Scan scan = createScan(applicationName, range, scanBackward);
-
-        List<List<Dot>> dotListList = hbaseOperations2.findParallel(HBaseTables.APPLICATION_TRACE_INDEX, scan, traceIdRowKeyDistributor, limit, traceIndexScatterMapper, APPLICATION_TRACE_INDEX_NUM_PARTITIONS);
-        List<Dot> mergeList = new ArrayList<>(limit + 10);
-        for(List<Dot> dotList : dotListList) {
-            mergeList.addAll(dotList);
-        }
-        return mergeList;
-    }
-
     /**
      *
      */
@@ -302,7 +280,7 @@ public class HbaseApplicationTraceIndexDao implements ApplicationTraceIndexDao {
     }
 
     @Override
-    public ScatterData scanTraceScatterDataMadeOfDotGroup(String applicationName, Range range, int xGroupUnit, int yGroupUnit, int limit, boolean scanBackward) {
+    public ScatterData scanTraceScatterData(String applicationName, Range range, int xGroupUnit, int yGroupUnit, int limit, boolean scanBackward) {
         if (applicationName == null) {
             throw new NullPointerException("applicationName must not be null");
         }

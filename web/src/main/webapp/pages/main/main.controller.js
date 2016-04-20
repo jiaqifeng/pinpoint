@@ -7,8 +7,8 @@
 	 * @name MainCtrl
 	 * @class
 	 */
-	pinpointApp.controller('MainCtrl', [ 'filterConfig', '$scope', '$timeout', '$routeParams', 'locationService', 'NavbarVoService', '$window', 'SidebarTitleVoService', 'filteredMapUtilService', '$rootElement', 'AnalyticsService',
-	    function (cfg, $scope, $timeout, $routeParams, locationService, NavbarVoService, $window, SidebarTitleVoService, filteredMapUtilService, $rootElement, analyticsService) {
+	pinpointApp.controller( "MainCtrl", [ "filterConfig", "$scope", "$timeout", "$routeParams", "locationService", "NavbarVoService", "$window", "SidebarTitleVoService", "filteredMapUtilService", "$rootElement", "AnalyticsService", "PreferenceService",
+	    function (cfg, $scope, $timeout, $routeParams, locationService, NavbarVoService, $window, SidebarTitleVoService, filteredMapUtilService, $rootElement, analyticsService, preferenceService) {
 			analyticsService.send(analyticsService.CONST.MAIN_PAGE);
 	        // define private variables
 	        var oNavbarVoService, bNodeSelected, bNoData;
@@ -38,10 +38,13 @@
 	            if ($routeParams.queryEndDateTime) {
 	                oNavbarVoService.setQueryEndDateTime($routeParams.queryEndDateTime);
 	            }
+				oNavbarVoService.setCalleeRange( preferenceService.getCalleeByApp($routeParams.application) );
+				oNavbarVoService.setCallerRange( preferenceService.getCallerByApp($routeParams.application) );
+
 				if ( oNavbarVoService.isRealtime() ) {
 					$scope.$broadcast('navbarDirective.initialize.realtime.andReload', oNavbarVoService);
 				} else {
-					if (angular.isDefined($routeParams.application) && angular.isUndefined($routeParams.readablePeriod) && angular.isUndefined($routeParams.readablePeriod)) {
+					if ( angular.isDefined($routeParams.application) && angular.isUndefined($routeParams.readablePeriod) ) {
 						$scope.$broadcast('navbarDirective.initialize.andReload', oNavbarVoService);
 					} else {
 						$window.$routeParams = $routeParams;
@@ -76,7 +79,7 @@
 				} else {
 					url += oNavbarVoService.getReadablePeriod() + '/' + oNavbarVoService.getQueryEndDateTime();
 				}
-	            if (locationService.path() !== url) {
+	            if (locationService.path() !== url ) {
 	                if (locationService.path() === '/main') {
 	                	locationService.path(url).replace();
 	                } else {
@@ -154,6 +157,10 @@
 	            $window.htoScatter = {};
 	            $scope.hasScatter = false;
 	            $scope.sidebarLoading = true;
+
+				if ( oNavbarVoService.isRealtime() ) {
+					$scope.$broadcast("realtimeChartController.close");
+				}
 	            $scope.$broadcast('sidebarTitleDirective.empty.forMain');
 	            $scope.$broadcast('nodeInfoDetailsDirective.hide');
 	            $scope.$broadcast('linkInfoDetailsDirective.hide');
@@ -174,7 +181,7 @@
 	         */
 	        $scope.$on('serverMapDirective.nodeClicked', function (event, e, query, node, data, searchQuery) {
 	            bNodeSelected = true;
-	            var oSidebarTitleVoService = new SidebarTitleVoService;
+	            var oSidebarTitleVoService = new SidebarTitleVoService();
 	            oSidebarTitleVoService.setImageType(node.serviceType);
 	
 	            if (node.isWas === true) {
@@ -201,7 +208,7 @@
 	         */
 	        $scope.$on('serverMapDirective.linkClicked', function (event, e, query, link, data) {
 	            bNodeSelected = false;
-	            var oSidebarTitleVoService = new SidebarTitleVoService;
+	            var oSidebarTitleVoService = new SidebarTitleVoService();
 	            if (link.unknownLinkGroup) {
 	                oSidebarTitleVoService
 	                    .setImageType(link.sourceInfo.serviceType)
@@ -267,7 +274,7 @@
 	         */
 	        $scope.$on('linkInfoDetailsDirective.showDetailInformationClicked', function (event, query, link) {
 	            $scope.hasScatter = false;
-	            var oSidebarTitleVoService = new SidebarTitleVoService;
+	            var oSidebarTitleVoService = new SidebarTitleVoService();
 	            oSidebarTitleVoService
 	                .setImageType(link.sourceInfo.serviceType)
 	                .setTitle(link.sourceInfo.applicationName)
@@ -282,7 +289,7 @@
 	         */
 	        $scope.$on('nodeInfoDetailDirective.showDetailInformationClicked', function (event, query, node) {
 	            $scope.hasScatter = false;
-	            var oSidebarTitleVoService = new SidebarTitleVoService;
+	            var oSidebarTitleVoService = new SidebarTitleVoService();
 
 	            oSidebarTitleVoService
 	                .setImageType(node.serviceType);

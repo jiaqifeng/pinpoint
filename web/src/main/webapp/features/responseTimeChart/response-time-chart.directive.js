@@ -27,8 +27,7 @@
                     var id, oChart;
 
                     // define variables of methods
-                    var setIdAutomatically, setWidthHeight, render, clickGraphItemListener, updateData,
-                        parseHistogramForAmcharts, renderEmpty;
+                    var setIdAutomatically, setWidthHeight, render, clickGraphItemListener, updateData, parseHistogramForAmcharts;
 
                     /**
                      * set id automatically
@@ -60,7 +59,7 @@
                                 "type": "serial",
                                 "theme": "none",
                                 "dataProvider": data,
-                                "startDuration": 1,
+                                "startDuration": 0,
                                 "valueAxes": [
                                     {
                                         "gridAlpha": 0.1,
@@ -99,9 +98,9 @@
 //                            	$at($at.MAIN, $at.CLK_RESPONSE_GRAPH);
 //                            });
                             oChart.addListener('clickGraphItem', function(event) {
-                            	analyticsService.send(analyticsService.CONST.MAIN, analyticsService.CONST.CLK_RESPONSE_GRAPH);
                             	if ( event.item.category == "Error" ) {
-                            		scope.$emit('responseTimeChartDirective.showErrorTransacitonList' );
+									analyticsService.send(analyticsService.CONST.MAIN, analyticsService.CONST.CLK_RESPONSE_GRAPH);
+                            		scope.$emit('responseTimeChartDirective.showErrorTransacitonList', event.item.category );
                             	}
                             	if ( useFilterTransaction ) {
                             		scope.$emit('responseTimeChartDirective.itemClicked.' + scope.namespace, event.item.serialDataItem.dataContext);
@@ -142,7 +141,7 @@
                      */
                     parseHistogramForAmcharts = function (data) {
                     	if ( angular.isUndefined( data ) ) {
-                    		data = {"1s": 0, "3s": 0, "5s": 0, "Slow": 0, "Error": 0};
+                    		data = preferenceService.getResponseTypeFormat();
                     	}
                         var newData = [],
                             alpha = [0.2, 0.3, 0.4, 0.6, 0.6],

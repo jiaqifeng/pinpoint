@@ -12,7 +12,7 @@
 	pinpointApp.service('AnalyticsService', [ '$rootScope', 'globalConfig', function ($rootScope, globalConfig) {
 		if ( typeof ga !== "undefined" ) {
 			this.send = function( category, name, label, count, options ) {
-				if ( globalConfig.sendAllowed == false ) return;
+				if ( globalConfig.sendAllowed === false ) return;
 				if ( arguments.length == 1 ) {
 					ga( 'send', 'pageview', arguments[0] );
 				} else {
@@ -59,8 +59,11 @@
 		this.CONST.CLK_CALLER_RANGE = "ClickCallerRange";
 		this.CONST.CLK_REALTIME_CHART_HIDE = "ClickRealtimeChartHide";
 		this.CONST.CLK_REALTIME_CHART_SHOW = "ClickRealtimeChartShow";
+		this.CONST.CLK_REALTIME_CHART_PIN_ON = "ClickRealtimeChartPinOn";
+		this.CONST.CLK_REALTIME_CHART_PIN_OFF = "ClickRealtimeChartPinOff";
 		this.CONST.CLK_SHOW_SERVER_TYPE_DETAIL = "ClickShowServerTypeDetail";
-		this.CONST.CLK_CHANGE_AGENT = "ClickChangeAgent";
+		this.CONST.CLK_CHANGE_AGENT_INSPECTOR = "ClickChangeAgentInspector";
+		this.CONST.CLK_CHANGE_AGENT_MAIN = "ClickChangeAgentMain";
 		this.CONST.CLK_START_REALTIME = "ClickStartRealtime";
 
 		this.CONST.CLK_CONFIGURATION = "ClickConfiguration";
@@ -86,6 +89,7 @@
 
 		this.CONST.TG_DATE = "ToggleDate";
 		this.CONST.TG_UPDATE_ON = "ToggleUpdateOn";
+		this.CONST.TG_UPDATE_OFF = "ToggleUpdateOff";
 		this.CONST.TG_NODE_VIEW = "ToggleNodeView";
 		this.CONST.TG_SCATTER_SUCCESS = "ToggleScatterSuccess";
 		this.CONST.TG_SCATTER_FAILED = "ToggleScatterFailed";

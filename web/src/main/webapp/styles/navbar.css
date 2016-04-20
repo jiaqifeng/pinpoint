@@ -22,7 +22,7 @@
 .main-navbar .divider-vertical {
     height: 35px;
     min-height: 1px;
-    margin: 0 9px;
+    margin: 0 3px;
     border: 0;
 }
 .main-navbar .navbar-form {
@@ -136,4 +136,14 @@
     font-weight: bold;
     padding-top: 4px;
     padding-bottom: 4px;
+}
+@keyframes blinkKeyframe {
+    0% { color: #FFF }
+    50% { color: #000  }
+    100% { color: #FFF }
+}
+.blinkblink {
+    animation-name: blinkKeyframe;
+    animation-duration: 4s;
+    animation-iteration-count: infinite;
 }

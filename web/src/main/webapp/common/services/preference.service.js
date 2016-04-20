@@ -9,9 +9,6 @@
 	 */
 	pinpointApp.constant('PreferenceServiceConfig', {
 		names: {
-			caller: "preference.caller",
-			callee: "preference.callee",
-			period: "preference.period",
 			favorite: "preference.favorite"
 		},
 		defaults: {
@@ -35,12 +32,13 @@
 			maxFavorite: 5000,
 			maxPeriod: 2,
 			realtimeScatterPeriod: 5 * 60 * 1000,//5m
+			responseType: [ "1s", "3s", "5s", "Slow", "Error" ],
 			responseTypeColor: [ "#2ca02c", "#3c81fa", "#f8c731", "#f69124", "#f53034" ],
 			agentAllStr: "All"
 		}
 	});
 	
-	pinpointApp.service('PreferenceService', [ 'PreferenceServiceConfig', function(cfg) {
+	pinpointApp.service( "PreferenceService", [ "PreferenceServiceConfig", "webStorage", function( cfg, webStorage ) {
 		var self = this;
 		var oDefault = {};
 		var aFavoriteList = [];
@@ -61,7 +59,7 @@
 			setFavoriteList();
 		};
 		function setFavoriteList() {
-			localStorage.setItem(cfg.names.favorite, JSON.stringify(aFavoriteList) );
+			webStorage.add(cfg.names.favorite, JSON.stringify(aFavoriteList) );
 		}
 		this.getFavoriteList = function() {
 			return aFavoriteList;
@@ -83,18 +81,45 @@
 		};
 		this.getResponseTypeColor = function() {
 			return cfg.cst.responseTypeColor;
-		}
+		};
 		this.getAgentAllStr = function() {
 			return cfg.cst.agentAllStr;
-		}
+		};
+		this.getResponseTypeFormat = function() {
+			var o = {};
+			jQuery.each( cfg.cst.responseType, function( index, value ) {
+				o[value] = 0;
+			});
+			return o;
+		};
+		this.getCalleeByApp = function(app) {
+			if ( angular.isUndefined( app ) ) {
+				return this.getCallee();
+			} else {
+				return webStorage.get( app + "+callee" ) || this.getCallee();
+			}
+		};
+		this.getCallerByApp = function(app) {
+			if ( angular.isUndefined( app ) ) {
+				return this.getCaller();
+			} else {
+				return webStorage.get(app + "+caller") || this.getCaller();
+			}
+		};
+		this.setDepthByApp = function( app, depth ) {
+			if (angular.isUndefined(app) || app === null || angular.isUndefined(depth) || depth === null) {
+				return;
+			}
+			webStorage.add(app, depth);
+		};
 		
 		
 		function loadPreference() {
-			// set value of localStoraget or default
-			// and set getter and setter function
+			// set value of webStorage or default
+			// and make getter and setter function
 			jQuery.each( cfg.list, function( index, value ) {
 				var name = value.name;
-				oDefault[name] = localStorage.getItem( name ) || cfg.defaults[name];
+				oDefault[name] = webStorage.get( name ) || cfg.defaults[name];
 				switch( value.type ) {
 					case "number":
 						oDefault[name] = parseInt( oDefault[name] );
@@ -105,12 +130,12 @@
 					return oDefault[name];
 				};
 				self["set" + fnPostfix] = function(v) {
-					localStorage.setItem(name, v);
+					webStorage.add(name, v);
 					oDefault[name] = v;
 				};
 			});
-			aFavoriteList = JSON.parse( localStorage.getItem(cfg.names.favorite) || "[]");
-		};
+			aFavoriteList = webStorage.get(cfg.names.favorite) || [];
+		}
 		
 	}]);
 })();

@@ -11,8 +11,8 @@
 	    maxTimeToShowLoadAsDefaultForUnknown: 60 * 60 * 12 // 12h
 	});
 	
-	pinpointApp.directive("nodeInfoDetailsDirective", [ "nodeInfoDetailsDirectiveConfig", "$filter", "$timeout", "isVisibleService", "$window", "helpContentTemplate", "helpContentService", "AnalyticsService", "PreferenceService",
-        function (cfg, $filter, $timeout, isVisibleService, $window, helpContentTemplate, helpContentService, analyticsService, preferenceService ) {
+	pinpointApp.directive("nodeInfoDetailsDirective", [ "nodeInfoDetailsDirectiveConfig", "$filter", "$timeout", "isVisibleService", "$window", "AnalyticsService", "PreferenceService", "TooltipService", "CommonAjaxService",
+        function (cfg, $filter, $timeout, isVisibleService, $window, analyticsService, preferenceService, tooltipService, commonAjaxService ) {
             return {
                 restrict: "EA",
                 replace: true,
@@ -25,8 +25,9 @@
                         htAgentChartRendered, bShown, sLastKey, getUnknownNode;
 
                     // define private variables of methods
-                    var reset, showDetailInformation, renderAllChartWhichIsVisible, hide, show, renderResponseSummary,
-                        renderLoad;
+                    var reset, showDetailInformation, renderAllChartWhichIsVisible, hide, show,
+						renderResponseSummary, updateResponseSummary, renderLoad, updateLoad,
+						bRequesting = false;
 
                     // bootstrap
                     bShown = false;
@@ -160,10 +161,15 @@
                      * @param h
                      */
                     renderResponseSummary = function (namespace, toApplicationName, histogram, w, h) {
-                        var className = $filter("applicationNameToClassName")(toApplicationName),
-                            namespace = namespace || "forNode_" + className;
+                        var className = $filter("applicationNameToClassName")(toApplicationName);
+						namespace = namespace || "forNode_" + className;
                         scope.$broadcast("responseTimeChartDirective.initAndRenderWithData." + namespace, histogram, w, h, false, true);
                     };
+					updateResponseSummary = function (namespace, toApplicationName, histogram, w, h) {
+						var className = $filter("applicationNameToClassName")(toApplicationName);
+						namespace = namespace || "forNode_" + className;
+						scope.$broadcast( "responseTimeChartDirective.updateData." + namespace, histogram );
+					};
 
                     /**
                      * render load
@@ -175,10 +181,15 @@
                      * @param useChartCursor
                      */
                     renderLoad = function (namespace, toApplicationName, timeSeriesHistogram, w, h, useChartCursor) {
-                        var className = $filter("applicationNameToClassName")(toApplicationName),
-                            namespace = namespace || "forNode_" + className;
+                        var className = $filter("applicationNameToClassName")(toApplicationName);
+						namespace = namespace || "forNode_" + className;
                         scope.$broadcast("loadChartDirective.initAndRenderWithData." + namespace, timeSeriesHistogram, w, h, useChartCursor);
                     };
+					updateLoad = function (namespace, toApplicationName, timeSeriesHistogram, w, h, useChartCursor) {
+						var className = $filter("applicationNameToClassName")(toApplicationName);
+						namespace = namespace || "forNode_" + className;
+						scope.$broadcast("loadChartDirective.updateData." + namespace, timeSeriesHistogram);
+					};
                     
                     getUnknownNode = function( key ) {
 	                	var node = null;
@@ -206,6 +217,38 @@
                         bShown = true;
                         element.show();
                     };
+					function mergeSummaryData( oData ) {
+						var oSummarySum = preferenceService.getResponseTypeFormat();
+						$.each( oData, function (agentName, oValue ) {
+							$.each(oValue, function (innerKey, value) {
+								oSummarySum[innerKey] += value;
+							});
+						});
+						return oSummarySum;
+					}
+					function mergeLoadData( oData ) {
+						var aLoadSum = [];
+						$.each( oData, function (agentName, aData) {
+							for (var i = 0; i < aData.length; i++) {
+								var aSet = aData[i];
+								if (aLoadSum.length < i + 1) {
+									aLoadSum[i] = {
+										"key": aSet.key,
+										"values": []
+									};
+								}
+								for (var j = 0; j < aSet.values.length; j++) {
+									if (aLoadSum[i].values.length < j + 1) {
+										aLoadSum[i].values[j] = [
+											aSet.values[j][0], 0
+										];
+									}
+									aLoadSum[i].values[j][1] += aSet.values[j][1];
+								}
+							}
+						});
+						return aLoadSum;
+					}
 
                     /**
                      * show node detail information of scope
@@ -374,10 +417,35 @@
                     scope.$on("responseTimeChartDirective.itemClicked.forNode", function (event, data) {
 //                        console.log("on responseTimeChartDirective.itemClicked.forNode", data);
                     });
+					scope.$on("responseTimeChartDirective.loadRealtime", function (event, applicationName, agentName, from, to ) {
+						if ( angular.isUndefined( scope.node ) || ( scope.node.applicationName !== applicationName ) ) {
+							return;
+						}
+						if ( bRequesting === false ) {
+							bRequesting = true;
+							commonAjaxService.getResponseTimeHistogramData( {
+								"applicationName": scope.node.applicationName,
+								"serviceTypeName": scope.node.category,
+								"from": from,
+								"to": to
+							}, function (oResult) {
+								if (agentName === preferenceService.getAgentAllStr()) {
+									updateResponseSummary("forNode", scope.node.applicationName, mergeSummaryData( oResult.summary ) );
+									updateLoad("forNode", scope.node.applicationName, mergeLoadData( oResult.timeSeries ) );
+								} else {
+									updateResponseSummary("forNode", scope.node.applicationName, oResult.summary[agentName]);
+									updateLoad("forNode", scope.node.applicationName, oResult.timeSeries[agentName]);
+								}
+								bRequesting = false;
+							}, function() {
+								bRequesting = false;
+							});
+						}
+					});
 					scope.$on("changedCurrentAgent", function( event, agentName ) {
 						var responseSummaryData = null;
 						var loadData = null;
-						if ( agentName === "All" ) {
+						if ( agentName === preferenceService.getAgentAllStr() ) {
 							responseSummaryData = scope.node.histogram;
 							loadData = scope.node.timeSeriesHistogram;
 						} else {
@@ -388,20 +456,8 @@
 						renderLoad("forNode", scope.node.applicationName, loadData, "100%", "220px", true);
 					});
 
-                    jQuery(".responseSummaryChartTooltip").tooltipster({
-                    	content: function() {
-                    		return helpContentTemplate(helpContentService.nodeInfoDetails.responseSummary);
-                    	},
-                    	position: "top",
-                    	trigger: "click"
-                    });
-                    jQuery(".loadChartTooltip").tooltipster({
-                    	content: function() {
-                    		return helpContentTemplate(helpContentService.nodeInfoDetails.load);
-                    	},
-                    	position: "top",
-                    	trigger: "click"
-                    });
+					tooltipService.init( "responseSummaryChart" );
+					tooltipService.init( "loadChart" );
                 }
             };
 	    }

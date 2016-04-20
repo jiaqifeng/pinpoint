@@ -51,22 +51,15 @@
 		}
 	});
 	
-	pinpointApp.controller('RealtimeChartCtrl', ['RealtimeChartCtrlConfig', '$scope', '$element', '$rootScope', '$compile', '$timeout', '$window', 'globalConfig', 'RealtimeWebsocketService', '$location', 'AnalyticsService', 'helpContentTemplate', 'helpContentService',
-	    function (cfg, $scope, $element, $rootScope, $compile, $timeout, $window, globalConfig, websocketService, $location, analyticsService, helpContentTemplate, helpContentService) {
-			
+	pinpointApp.controller( "RealtimeChartCtrl", [ "RealtimeChartCtrlConfig", "$scope", "$element", "$rootScope", "$compile", "$timeout", "$window", "globalConfig", "$location", "RealtimeWebsocketService", "AnalyticsService", "TooltipService",
+	    function (cfg, $scope, $element, $rootScope, $compile, $timeout, $window, globalConfig, $location, websocketService, analyticsService, tooltipService) {
 	    	$element = $($element);
 			//@TODO will move to preference-service 
 	    	var TIMEOUT_MAX_COUNT = 10;
 			var X_AXIS_COUNT = 10;
 	    	var RECEIVE_SUCCESS = 0;
-	    	
-			var $elSumChartWrapper = $element.find("div.agent-sum-chart");
-			var $elTitle = $element.find("div.agent-sum-chart div:first-child span:first-child");
-			var $elSumChartCount = $element.find("div.agent-sum-chart div:first-child span:last-child");
-	    	var $elAgentChartListWrapper = $element.find("div.agent-chart-list");
-	    	var $elWarningMessage = $element.find(".connection-message");
-	    	var $elHandleGlyphicon = $element.find(".handle .glyphicon");
-	    	var $elPin = $element.find(".glyphicon-pushpin");
+
+			var $elSumChartWrapper, $elTitle, $elSumChartCount, $elAgentChartListWrapper, $elWarningMessage, $elHandleGlyphicon, $elPin;
 	    	var preUrlParam = "";
 			var currentApplicationName = "";
 	    	var aAgentChartElementList = [];
@@ -90,22 +83,12 @@
 		    	return o;
 	    	})();
 			var timeoutResult = null;
-	    	
-	    	jQuery('.realtimeTooltip').tooltipster({
-            	content: function() {
-            		return helpContentTemplate(helpContentService.realtime["default"]);
-            	},
-            	position: "top",
-            	trigger: "click"
-            });
+			tooltipService.init( "realtime" );
 
 	    	$scope.sumChartColor 	= ["rgba(44, 160, 44, 1)", 	"rgba(60, 129, 250, 1)", 	"rgba(248, 199, 49, 1)", 	"rgba(246, 145, 36, 1)" ];
 	    	$scope.agentChartColor 	= ["rgba(44, 160, 44, .8)", "rgba(60, 129, 250, .8)", 	"rgba(248, 199, 49, .8)", 	"rgba(246, 145, 36, .8)"];
 	    	$scope.requestLabelNames= [ "1s", "3s", "5s", "Slow"];
 	    	$scope.bInitialized = false;
-			$elWarningMessage.hide();
-			$elTitle.html("");
-			$elSumChartCount.html("0");
 
 			$(document).on("visibilitychange", function() {
 				switch ( document.visibilityState ) {
@@ -125,6 +108,19 @@
 						break;
 				}
 			});
+			initElements();
+			function initElements() {
+				$elSumChartWrapper = $element.find("div.agent-sum-chart");
+				$elTitle = $element.find("div.agent-sum-chart div:first-child span:first-child");
+				$elSumChartCount = $element.find("div.agent-sum-chart div:first-child span:last-child");
+				$elAgentChartListWrapper = $element.find("div.agent-chart-list");
+				$elWarningMessage = $element.find(".connection-message");
+				$elHandleGlyphicon = $element.find(".handle .glyphicon");
+				$elPin = $element.find(".glyphicon-pushpin");
+				$elWarningMessage.hide();
+				$elTitle.html("");
+				$elSumChartCount.html("0");
+			}
 
 	    	function initChartDirective() {
 	    		if ( hasAgentChart( "sum" ) === false ) {
@@ -198,7 +194,7 @@
 	        			break;
 	        		case cfg.values.RESPONSE:
 		        		var responseData = data[cfg.keys.RESULT];
-			        	if ( responseData[cfg.keys.APPLICATION_NAME] !== currentApplicationName ) return;
+						if ( responseData[cfg.keys.APPLICATION_NAME] !== currentApplicationName ) return;
 			        	
 			        	var applicationData = responseData[cfg.keys.ACTIVE_THREAD_COUNTS];
 			        	var aRequestSum = getSumOfRequestType( applicationData );
@@ -228,7 +224,6 @@
 	        		agentIndexAndCount++;
 	        	}
         		$scope.$broadcast('realtimeChartDirective.onData.sum', aRequestSum, timeStamp, maxY, bAllError );
-
 				$elSumChartCount.html(agentIndexAndCount);
 	        }
 	        function makeRequest( applicationName ) {
@@ -236,7 +231,7 @@
 	        	return JSON.stringify(wsMessageTemplate);
 	        }
 	        function checkAgentChart( agentName, agentIndexAndCount ) {
-	        	if ( hasAgentChart( agentName ) == false ) {
+	        	if ( hasAgentChart( agentName ) === false ) {
         			if ( hasNotUseChart( agentIndexAndCount ) ) {
         				linkNamespaceToIndex(agentName, agentIndexAndCount);
         			} else {
@@ -285,7 +280,7 @@
 	        	websocketService.send( makeRequest( currentApplicationName) );
 	        }
 	        function initReceive() {
-	        	if ( websocketService.isOpened() == false ) {
+	        	if ( websocketService.isOpened() === false ) {
 	        		initSend();
 	        	} else {
 	        		startReceive();
@@ -337,20 +332,21 @@
 	        function setPinColor() {
 	        	$elPin.css("color", bIsPinned ? "red": "");
 	        }
-	        $scope.$on('realtimeChartController.close', function () {
+	        $scope.$on( "realtimeChartController.close", function () {
 	        	hidePopup();
 	        	var prevShowRealtimeChart = bShowRealtimeChart;
 	        	$scope.closePopup();
 	        	bShowRealtimeChart = prevShowRealtimeChart;
 	        	setPinColor();
 	        });
-	        $scope.$on('realtimeChartController.initialize', function (event, was, applicationName, urlParam ) {
+	        $scope.$on( "realtimeChartController.initialize", function (event, was, applicationName, urlParam ) {
 	        	if ( bIsPinned === true && preUrlParam === urlParam ) return;
-	        	if ( /^\/main/.test( $location.path() ) == false ) return;
+	        	if ( /^\/main/.test( $location.path() ) === false ) return;
 	        	bIsWas = angular.isUndefined( was ) ? false : was;
 	        	applicationName = angular.isUndefined( applicationName ) ? "" : applicationName;
 	        	preUrlParam = urlParam;
 
+				initElements();
 				$elTitle.html( currentApplicationName = applicationName );
 	        	if ( globalConfig.useRealTime === false ) return;
 	        	if ( bShowRealtimeChart === false ) return;
@@ -376,6 +372,7 @@
 	        };
 	        $scope.pin = function() {
 	        	bIsPinned = !bIsPinned;
+				analyticsService.send( analyticsService.CONST.MAIN, bIsPinned ? analyticsService.CONST.CLK_REALTIME_CHART_PIN_ON : analyticsService.CONST.CLK_REALTIME_CHART_PIN_OFF );
 	        	setPinColor();
 	        };
 	        $scope.resizePopup = function() {
@@ -396,32 +393,14 @@
 	        		$elAgentChartListWrapper.css("height", (popupHeight - cfg.css.titleHeight) + "px");
 	        	}
 	        	bIsFullWindow = !bIsFullWindow;
-	        }
-	        $scope.toggleRealtime = function() {
-	        	if ( bIsWas === false ) return;
-	        	
-	        	if ( bShowRealtimeChart === true ) {
-	        		analyticsService.send( analyticsService.CONST.MAIN, analyticsService.CONST.CLK_REALTIME_CHART_HIDE );
-	        		hidePopup();
-	        		stopReceive();
-	        		stopChart();
-	        		bShowRealtimeChart = false;
-	        	} else {
-	        		analyticsService.send( analyticsService.CONST.MAIN, analyticsService.CONST.CLK_REALTIME_CHART_SHOW );
-	        		showPopup();
-	        		waitingConnection();
-	        		initReceive();
-	        		bShowRealtimeChart = true;
-	        	}
-	        }
-	        
+	        };
 	        $scope.closePopup = function() {
 	        	stopReceive();
 	        	stopChart();
 				$elWarningMessage.hide();
 				$elTitle.html( currentApplicationName = "" );
 				$elSumChartCount.html("0");
-	        }
+	        };
 	        $($window).on("resize", function() {
 	        	adjustWidth();
 	        });

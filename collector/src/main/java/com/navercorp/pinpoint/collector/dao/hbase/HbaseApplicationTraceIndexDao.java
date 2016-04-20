@@ -69,24 +69,15 @@ public class HbaseApplicationTraceIndexDao implements ApplicationTraceIndexDao {
 
         put.addColumn(APPLICATION_TRACE_INDEX_CF_TRACE, makeQualifier(span) , acceptedTime, value);
 
-        hbaseTemplate.put(APPLICATION_TRACE_INDEX, put);
+        boolean success = hbaseTemplate.asyncPut(APPLICATION_TRACE_INDEX, put);
+        if (!success) {
+            hbaseTemplate.put(APPLICATION_TRACE_INDEX, put);
+        }
     }
 
     private byte[] makeQualifier(final TSpan span) {
-        boolean useIndexedQualifier = false;
-        byte[] qualifier;
+        byte[] qualifier = SpanUtils.getVarTransactionId(span);
 
-        if (useIndexedQualifier) {
-            final Buffer columnName = new AutomaticBuffer(16);
-            // FIXME putVar not used in order to utilize hbase column prefix filter
-            columnName.put(span.getElapsed());
-            columnName.put(SpanUtils.getVarTransactionId(span));
-            qualifier = columnName.getBuffer();
-        } else {
-            // OLD
-            // byte[] transactionId = SpanUtils.getTransactionId(span);
-            qualifier = SpanUtils.getVarTransactionId(span);
-        }
         return qualifier;
     }
 

@@ -7,8 +7,8 @@
 	 * @name serverListDirective
 	 * @class
 	 */
-	pinpointApp.directive('serverListDirective', [ '$timeout', '$window', '$filter', 'helpContentTemplate', 'helpContentService', "AnalyticsService",
-		function ($timeout, $window, $filter, helpContentTemplate, helpContentService, analyticsService ) {
+	pinpointApp.directive( "serverListDirective", [ "$timeout", "$window", "$filter", "AnalyticsService", "TooltipService",
+		function ( $timeout, $window, $filter, analyticsService, tooltipService ) {
             return {
                 restrict: 'A',
                 link: function postLink(scope, element) {
@@ -53,7 +53,7 @@
                 			a.push( p );
                 		}
                 		return a.sort()[0];
-                	}
+                	};
                 	
                 	var showChart = function( histogram, timeSeriesHistogram ) {
                 		if ( bInitialized ) {
@@ -64,7 +64,7 @@
                     		scope.$broadcast('loadChartDirective.initAndRenderWithData.forServerList', timeSeriesHistogram, '360px', '200px', false, true);
                 		}
                 		
-                	}
+                	};
                 	scope.showNodeServer = false;
                 	scope.showLinkServer = false;
                 	scope.selectServer = function( instanceName ) {
@@ -111,13 +111,7 @@
                 		bInitialized = true;
                     });
 
-                    $element.find('.serverListTooltip').tooltipster({
-                    	content: function() {
-                    		return helpContentTemplate(helpContentService.nodeInfoDetails.nodeServers);
-                    	},
-                    	position: "bottom",
-                    	trigger: "click"
-                    });	
+					tooltipService.init( "serverList" );
                 }
             };
 	    }

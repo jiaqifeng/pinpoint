@@ -1,7 +1,7 @@
 pinpoint-hbase:
   container_name: pinpoint-hbase
   hostname: hbase
-  image: naver/pinpoint-hbase:1.5.2-SNAPSHOT
+  image: naver/pinpoint-hbase:1.6.0-SNAPSHOT
   restart: always
   expose:
     - "2181"
@@ -11,7 +11,7 @@ pinpoint-hbase:
 pinpoint-collector:
   container_name: pinpoint-collector
   hostname: collector
-  image: naver/pinpoint-collector:1.5.2-SNAPSHOT
+  image: naver/pinpoint-collector:1.6.0-SNAPSHOT
   restart: always
   expose:
     - "9994"
@@ -29,7 +29,8 @@ pinpoint-collector:
     COLLECTOR_TCP_PORT: 9994
     COLLECTOR_UDP_STAT_LISTEN_PORT: 9995
     COLLECTOR_UDP_SPAN_LISTEN_PORT: 9996
-    CLUSTER_ENABLE: 'false'
+    CLUSTER_ENABLE: 'true'
+    CLUSTER_ZOOKEEPER_ADDRESS: hbase
     DISABLE_DEBUG: 'true'
   links:
     - pinpoint-hbase:hbase
@@ -37,7 +38,7 @@ pinpoint-collector:
 pinpoint-web:
   container_name: pinpoint-web
   hostname: web
-  image: naver/pinpoint-web:1.5.2-SNAPSHOT
+  image: naver/pinpoint-web:1.6.0-SNAPSHOT
   restart: always
   expose:
     - "8080"
@@ -46,7 +47,8 @@ pinpoint-web:
   environment:
     HBASE_HOST: hbase
     HBASE_PORT: 2181
-    CLUSTER_ENABLE: 'false'
+    CLUSTER_ENABLE: 'true'
+    CLUSTER_ZOOKEEPER_ADDRESS: hbase
     ADMIN_PASSWORD: admin123
     DISABLE_DEBUG: 'true'
   links:
@@ -54,7 +56,7 @@ pinpoint-web:
 
 # only example
 #pinpoint-agent:
-#  image: naver/pinpoint-agent:1.5.2-SNAPSHOT
+#  image: naver/pinpoint-agent:1.6.0-SNAPSHOT
 #  net: "none"
 #  restart: unless-stopped
 #  volumes:
