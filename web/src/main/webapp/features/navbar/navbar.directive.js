@@ -35,12 +35,6 @@
 	
 	                var applicationResource;
 
-					var setDepthToStorage = function(app, depth) {
-	                	if (angular.isUndefined(app) || app === null || angular.isUndefined(depth) || depth === null) {
-	                		return;
-	                	}
-	                	webStorage.add(app, depth);
-	                };
 	                scope.showNavbar = false;
 	                scope.periodDelay = false;
 	                scope.aReadablePeriodList = preferenceService.getPeriodTypes();
@@ -65,8 +59,8 @@
 	                        label: '1 minute'
 	                    }
 	                ];
-					scope.callee = prevCallee = preferenceService.getCalleeFromStorage( scope.application );
-	                scope.caller = prevCaller = preferenceService.getCallerFromStorage( scope.application );
+					scope.callee = prevCallee = preferenceService.getCalleeByApp( scope.application );
+	                scope.caller = prevCaller = preferenceService.getCallerByApp( scope.application );
 	                scope.rangeList = preferenceService.getDepthList();
 	                scope.applications = [
 	                    {
@@ -119,10 +113,10 @@
 	                        }
 	                    ];
 	                    scope.application = oNavbarVoService.getApplication() || "";
-						if ( scope.application !== "" ) {
-							scope.callee = prevCallee = preferenceService.getCalleeFromStorage( scope.application );
-							scope.caller = prevCaller = preferenceService.getCallerFromStorage( scope.application );
-						}
+						// if ( scope.application !== "" ) {
+							scope.callee = prevCallee = preferenceService.getCalleeByApp( scope.application );
+							scope.caller = prevCaller = preferenceService.getCallerByApp( scope.application );
+						// }
 	                    scope.disableApplication = true;
 	                    scope.readablePeriod = oNavbarVoService.getReadablePeriod() || preferenceService.getPeriod();
 						scope.periodCalendar = oNavbarVoService.getReadablePeriod() || preferenceService.getPeriod();
@@ -299,8 +293,8 @@
 	                    }
 	                    oNavbarVoService.setApplication(scope.application);
 
-						scope.callee = preferenceService.getCalleeFromStorage(scope.application);
-	                    scope.caller = preferenceService.getCallerFromStorage(scope.application);
+						scope.callee = prevCallee = preferenceService.getCalleeByApp(scope.application);
+	                    scope.caller = prevCaller = preferenceService.getCallerByApp(scope.application);
 
 						oNavbarVoService.setCalleeRange( scope.callee );
 	                    oNavbarVoService.setCallerRange( scope.caller );
@@ -579,6 +573,9 @@
 	                scope.showUpdate = function () {
 	                    return scope.periodType === cfg.periodType.LAST && (_.indexOf(['5m', '20m', '1h', '3h'], scope.readablePeriod) >= 0) && scope.application ? true : false;
 	                };
+					scope.changeUpdateSetting = function() {
+						analyticsService.send(analyticsService.CONST.MAIN, scope.autoUpdate ? analyticsService.CONST.TG_UPDATE_OFF : analyticsService.CONST.TG_UPDATE_ON );
+					};
 	
 	                /**
 	                 * start update
@@ -630,11 +627,11 @@
 							analyticsService.send(analyticsService.CONST.MAIN, analyticsService.CONST.CLK_CALLER_RANGE, scope.caller);
 							prevCallee = scope.callee;
 							prevCaller = scope.caller;
-							setDepthToStorage( scope.application + "+callee", scope.callee );
-							setDepthToStorage( scope.application + "+caller", scope.caller );
-							
+							preferenceService.setDepthByApp( scope.application + "+callee", scope.callee );
+							preferenceService.setDepthByApp( scope.application + "+caller", scope.caller );
+
 							window.location.reload(true);
-							//broadcast();
+							// broadcast();
 						}
 					};
 					scope.cancelDepth = function( bHide ) {
@@ -695,7 +692,6 @@
 	                 */
 	                scope.$watch('autoUpdate', function (newVal, oldVal) {
 	                    if (newVal) {
-	                    	analyticsService.send(analyticsService.CONST.MAIN, analyticsService.CONST.TG_UPDATE_ON);
 	                        $timeout(startUpdate, 1000);
 	                    } else {
 	                        resetTimeLeft();
