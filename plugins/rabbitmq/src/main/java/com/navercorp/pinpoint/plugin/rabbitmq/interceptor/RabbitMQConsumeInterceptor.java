@@ -28,10 +28,32 @@ public class RabbitMQConsumeInterceptor extends SpanSimpleAroundInterceptor {
         this.excludeExchangeFilter = rabbitMQClientPluginConfig.getExcludeExchangeFilter();
     }
 
-    @Override
-    protected Trace createTrace(Object target, Object[] args) {
+    protected Map<String, Object> getHeaders(Object target, Object[] args) {
+        AMQP.BasicProperties properties = (AMQP.BasicProperties) args[2];
+        Map<String, Object> headers = properties.getHeaders();
+        return headers;
+    }
+
+    protected String getExchange(Object target, Object[] args) {
         Envelope envelope = (Envelope) args[1];
         String exchange = envelope.getExchange();
+        return exchange;
+    }
+
+    protected String getRoutingKey(Object target, Object[] args) {
+        Envelope envelope = (Envelope) args[1];
+        return envelope.getRoutingKey();
+    }
+
+    protected String getChannelAddress(Object target, Object[] args) {
+        DefaultConsumer consumer = (DefaultConsumer) target;
+        Connection connection = consumer.getChannel().getConnection();
+        return connection.getAddress().getHostAddress() + ":" + connection.getPort();
+    }
+
+    @Override
+    protected Trace createTrace(Object target, Object[] args) {
+        String exchange = getExchange(target, args);
 
         if (RabbitMQClientPluginConfig.isExchangeExcluded(exchange, excludeExchangeFilter)) {
             if (isDebug)
@@ -39,10 +61,12 @@ public class RabbitMQConsumeInterceptor extends SpanSimpleAroundInterceptor {
             return null;
         }
 
-        AMQP.BasicProperties properties = (AMQP.BasicProperties) args[2];
-        Map<String, Object> headers = properties.getHeaders();
+        Map<String, Object> headers = getHeaders(target, args);
 
         // If this transaction is not traceable, mark as disabled.
+        if (headers == null || headers.size()<1) {
+            return null;
+        }
         if (headers.get(RabbitMQConstants.META_DO_NOT_TRACE) != null) {
             return traceContext.disableSampling();
         }
@@ -65,11 +89,9 @@ public class RabbitMQConsumeInterceptor extends SpanSimpleAroundInterceptor {
 
     @Override
     protected void doInBeforeTrace(SpanRecorder recorder, Object target, Object[] args) {
-        AMQP.BasicProperties properties = (AMQP.BasicProperties) args[2];
-        Map<String, Object> headers = properties.getHeaders();
-        Envelope envelope = (Envelope) args[1];
+        Map<String, Object> headers = getHeaders(target, args);
 
-        String exchange=envelope.getExchange();
+        String exchange = getExchange(target, args);
         if (exchange == null || exchange.equals(""))
             exchange = "unknown";
 
@@ -86,24 +108,18 @@ public class RabbitMQConsumeInterceptor extends SpanSimpleAroundInterceptor {
         recorder.recordRpcName("rabbitmq://exchange="+exchange);
         recorder.recordAcceptorHost("exchange-" + exchange);
         if (isDebug)
-            logger.debug("endPoint=" + envelope.getExchange() + ",=" + exchange);
+            logger.debug("endPoint=" + getExchange(target, args) + ",=" + exchange);
     }
 
     @Override
     protected void doInAfterTrace(SpanRecorder recorder, Object target, Object[] args, Object result, Throwable throwable) {
-        DefaultConsumer consumer = (DefaultConsumer) target;
-        Connection connection = consumer.getChannel().getConnection();
-        Envelope envelope = (Envelope) args[1];
-        AMQP.BasicProperties properties = (AMQP.BasicProperties) args[2];
-        byte[] body = (byte[]) args[3];
-
-        String exchange=envelope.getExchange();
+        String exchange=getExchange(target, args);
         if (exchange == null || exchange.equals(""))
             exchange = "unknown";
 
         recorder.recordApi(methodDescriptor);
-        recorder.recordAttribute(RabbitMQConstants.RABBITMQ_ROUTINGKEY_ANNOTATION_KEY, envelope.getRoutingKey());
-        recorder.recordRemoteAddress(connection.getAddress().getHostAddress() + ":" + connection.getPort());
+        recorder.recordAttribute(RabbitMQConstants.RABBITMQ_ROUTINGKEY_ANNOTATION_KEY, getRoutingKey(target, args));
+        recorder.recordRemoteAddress(getChannelAddress(target, args));
 
         if (throwable != null) {
             recorder.recordException(throwable);

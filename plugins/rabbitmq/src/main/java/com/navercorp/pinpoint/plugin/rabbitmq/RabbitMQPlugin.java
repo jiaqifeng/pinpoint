@@ -79,19 +79,20 @@ public class RabbitMQPlugin implements ProfilerPlugin, TransformTemplateAware {
     }
 
     private void addConsumer() {
-        transformTemplate.transform("org.springframework.amqp.rabbit.listener.BlockingQueueConsumer$InternalConsumer", new TransformCallback() {
+        transformTemplate.transform("org.springframework.amqp.rabbit.listener.AbstractMessageListenerContainer", new TransformCallback() {
             @Override
             public byte[] doInTransform(Instrumentor instrumentor, ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws InstrumentException {
                 InstrumentClass target = instrumentor.getInstrumentClass(loader, className, classfileBuffer);
 
-                final InstrumentMethod method = target.getDeclaredMethod("handleDelivery", "java.lang.String", "com.rabbitmq.client.Envelope", "com.rabbitmq.client.AMQP$BasicProperties", "byte[]");
+                final InstrumentMethod method = target.getDeclaredMethod("invokeListener", "com.rabbitmq.client.Channel", "org.springframework.amqp.core.Message");
                 if (method != null) {
-                    method.addInterceptor(CONSUMER_INTERCEPTOR_FQCN);
+                    method.addInterceptor("com.navercorp.pinpoint.plugin.rabbitmq.interceptor.SpringListenerInterceptor");
                 }
 
                 return target.toBytecode();
             }
         });
+
         transformTemplate.transform("com.rabbitmq.client.QueueingConsumer", new TransformCallback() {
             @Override
             public byte[] doInTransform(Instrumentor instrumentor, ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws InstrumentException {
